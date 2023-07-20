@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-g3ydz0v_(9x1ef5a9tg003zybndjka62sw!8wucbos_they*+9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','fetchmail.pythonanywhere.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','fetchmail.pythonanywhere.com','django-server-production-5735.up.railway.app']
 
 
 # Application definition
