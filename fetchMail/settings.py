@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-g3ydz0v_(9x1ef5a9tg003zybndjka62sw!8wucbos_they*+9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.43.36', '192.168.249.52']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','fetchmail.pythonanywhere.com']
 
 
 # Application definition
@@ -40,11 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'corsheaders',
     'rest_framework',
-    # 'rest_framework.authtoken',
-    # 'allauth',
-    # 'allauth.account',
-    # 'allauth.socialaccount',
-    # 'allauth.socialaccount.providers.google',
     'oauth2_provider',
     'social_django',
     'drf_social_oauth2',
