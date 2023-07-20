@@ -62,7 +62,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    'http://192.168.249.52:5173',
+    'https://fetch-mail-front.vercel.app',
     'http://192.168.43.36:5173'
 ]
 
