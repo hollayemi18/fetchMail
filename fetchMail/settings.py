@@ -184,4 +184,4 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 """
 
-CUSTOM_HOST = "https://fetchmail.pythonanywhere.com"
+CUSTOM_HOST = "https://django-server-production-5735.up.railway.app"
