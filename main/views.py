@@ -232,7 +232,7 @@ def get_token(request):
         "code": request.GET.get('code')
     })
     response = res.json()
-    convert_res = requests.post(url="http://127.0.0.1:8000/auth/convert-token/", data={
+    convert_res = requests.post(url=f"{settings.CUSTOM_HOST}/auth/convert-token/", data={
         "client_id": "JzgrLAbac0aWaElmiSH2Afx5R2VAwBE7epiFV91o",
         "client_secret": "9CgTFPwM2R0RUJPwxCGKeEqRCaCqfcSB9ArO1OfQvd3JHHO1B1O734j1VrzCIGsUm8py0BkayaYuwJAU91ImhXSTRm8wMpl09zwRhUjuUeLwnR3JYb0bdsmVbAopgmer",
         "backend": "google-oauth2",
