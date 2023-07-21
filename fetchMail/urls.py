@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from main.views import home,message_obj_view, all_messages_with_attachment,next_page,next_messages_with_attachment, CreateAttachmentDetails, ListAttachmentDetails,test_view,gmail_service, get_token, get_user,process_attachment_with_eden_ai, process_attachment_test
+from main.views import home,message_obj_view, all_messages_with_attachment,next_page,next_messages_with_attachment, CreateAttachmentDetails, ListAttachmentDetails,test_view,gmail_service, get_token, get_user,process_attachment_with_eden_ai, process_attachment_test,ConverttokenView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +32,7 @@ urlpatterns = [
     path('attachment_test/<id>/', process_attachment_test),
     path('create_attachment/', CreateAttachmentDetails.as_view() ),
     path('list_attachment/', ListAttachmentDetails.as_view() ),
+    path('auth/convert-tokens/', ConverttokenView.as_view() ),
     path('get_user/',get_user),
     path('auth/', include('drf_social_oauth2.urls',namespace='drf'))
     #path('user_login/',LogIn.as_view()),

@@ -17,6 +17,7 @@ from google.oauth2.credentials import Credentials
 from django.contrib.auth import logout as Logout
 from django.shortcuts import render, HttpResponse, redirect
 from django.conf import settings
+from django.db import IntegrityError
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import generics
@@ -26,7 +27,15 @@ from rest_framework import status
 #from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 #from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 #from dj_rest_auth.registration.views import SocialLoginView
-from drf_social_oauth2.views import AccessToken
+from drf_social_oauth2.views import AccessToken, ConvertTokenView
+from drf_social_oauth2.serializers import ConvertTokenSerializer
+from oauthlib.oauth2.rfc6749.errors import (
+    InvalidClientError,
+    UnsupportedGrantTypeError,
+    AccessDeniedError,
+    MissingClientIdError,
+    InvalidRequestError,
+)
 from .serializers import AttachmentSerializers, UserSerializers
 from .models import AttachmentDetails, GoogleTokens
 from .email import read_message
@@ -207,19 +216,85 @@ class MyAccountAdapter(GoogleOAuth2Adapter):
 
 @api_view(['GET'])
 def test_view(request):
-    print(dir(request.user))
-    print(request.user.oauth2_provider_refreshtoken.values())
-    print(request.user.oauth2_provider_accesstoken.values())
-    print(request.user.oauth2_provider_idtoken.values())
-    print(request.user.oauth2_provider_grant.values())
-    print(request.user.oauth2_provider_application.values())
-
     return HttpResponse("")
 
 
 def logout(request):
     Logout(request)
     return redirect('/')
+
+
+class ConverttokenView(ConvertTokenView):
+    def post(self, request: Request, *args, **kwargs):
+        code = request.data.get("code")
+        res = requests.post(url="https://oauth2.googleapis.com/token", data={
+        "client_id": settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+        "client_secret": settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET,
+        "redirect_uri": "postmessage",
+        "grant_type": 'authorization_code',
+        "code": code
+        })
+        response = res.json()
+        data={
+        "client_id": "JzgrLAbac0aWaElmiSH2Afx5R2VAwBE7epiFV91o",
+        "client_secret": "9CgTFPwM2R0RUJPwxCGKeEqRCaCqfcSB9ArO1OfQvd3JHHO1B1O734j1VrzCIGsUm8py0BkayaYuwJAU91ImhXSTRm8wMpl09zwRhUjuUeLwnR3JYb0bdsmVbAopgmer",
+        "backend": "google-oauth2",
+        "grant_type": 'convert_token',
+        "token": response.get('access_token')
+    }
+        serializer = ConvertTokenSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        # Use the rest framework `.data` to fake the post body of the django request.
+        request._request.POST = request._request.POST.copy()
+        for key, value in serializer.validated_data.items():
+            request._request.POST[key] = value
+
+        try:
+            url, headers, body, status = self.create_token_response(request._request)
+        except InvalidClientError:
+            return Response(
+                data={'invalid_client': 'Missing client type.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except MissingClientIdError as ex:
+            return Response(
+                data={'invalid_request': ex.description},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except InvalidRequestError as ex:
+            return Response(
+                data={'invalid_request': ex.description},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except UnsupportedGrantTypeError:
+            return Response(
+                data={'unsupported_grant_type': 'Missing grant type.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except AccessDeniedError:
+            return Response(
+                {'access_denied': f'The token you provided is invalid or expired.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except IntegrityError as e:
+            if 'email' in str(e) and 'already exists' in str(e):
+                return Response(
+                    {'error': 'A user with this email already exists.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+                return Response(
+                    {'error': 'Database error.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        fetchmail = json.loads(body) 
+        return Response({"google": response, "fetch_mail": fetchmail})
 
 
 @api_view(['GET'])
