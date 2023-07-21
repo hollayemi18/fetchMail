@@ -293,7 +293,18 @@ class ConverttokenView(ConvertTokenView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        fetchmail = json.loads(body) 
+        fetchmail = json.loads(body)
+        user = AccessToken.objects.get(
+        token=convert_response.get("access_token")).user
+
+        # Save google tokens
+        if user.google_tokens:
+            gt = user.google_tokens
+            gt.access_token = response.get("access_token")
+            gt.refresh_token = response.get("refresh_token")
+            gt.save()
+        else:
+            gt = GoogleTokens.objects.create(access_token=response.get("access_token"), refresh_token=response.get("refresh_token"), user=user)
         return Response({"google": response, "fetch_mail": fetchmail})
 
 
