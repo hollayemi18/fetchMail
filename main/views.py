@@ -295,7 +295,7 @@ class ConverttokenView(ConvertTokenView):
 
         fetchmail = json.loads(body)
         user = AccessToken.objects.get(
-        token=convert_response.get("access_token")).user
+        token=fetchmail.get("access_token")).user
 
         # Save google tokens
         if user.google_tokens:
