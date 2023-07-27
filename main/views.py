@@ -51,7 +51,7 @@ def gmail_service(request):
         print("Refresh", request.user.google_tokens.refresh_token)
         creds = Credentials(
             token, refresh_token=request.user.google_tokens.refresh_token,token_uri="https://oauth2.googleapis.com/token",client_id=settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,client_secret=settings.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET)
-        
+
         service = build('gmail', 'v1', credentials=creds)
         return service
     except:
@@ -298,12 +298,12 @@ class ConverttokenView(ConvertTokenView):
         token=fetchmail.get("access_token")).user
 
         # Save google tokens
-        if user.google_tokens:
+        try:
             gt = user.google_tokens
             gt.access_token = response.get("access_token")
             gt.refresh_token = response.get("refresh_token")
             gt.save()
-        else:
+        except:
             gt = GoogleTokens.objects.create(access_token=response.get("access_token"), refresh_token=response.get("refresh_token"), user=user)
         return Response({"google": response, "fetch_mail": fetchmail})
 
@@ -407,7 +407,7 @@ def convert_to_text(attachment, attachment_type):
 
     else:
         text = file
-    
+
     print("Text Converted")
 
     return text
@@ -416,7 +416,7 @@ def convert_to_text(attachment, attachment_type):
 @api_view(['GET'])
 def process_attachment_with_eden_ai(request, id):
     service = gmail_service(request)
-    
+
     msg = service.users().messages().get(userId='me', id=id, format='full').execute()
     data = read_message(service, msg)
     # Get attachment and convert
@@ -430,7 +430,7 @@ def process_attachment_with_eden_ai(request, id):
     results = []
 
     file = b64decode(attachment)
-     
+
     if 'pdf' in attachment_type:
         #Convert pdf to iamge and save in temp file
         images = convert_from_bytes(file)
@@ -468,7 +468,7 @@ def process_attachment_with_eden_ai(request, id):
         print("Finished Eden ai")
 
 
-    return Response({"info": results, 
+    return Response({"info": results,
     "value": convert_to_text(attachment, attachment_type)
     })
 
@@ -482,9 +482,9 @@ def process_attachment_test(request, id):
     attachment = attachment.replace("_", '/')
     attachment = attachment.replace("-", '+')
     attachment_type = data.get('attachment_type')
-    
+
     file = b64decode(attachment)
-    
+
     images = convert_from_bytes(file)
     for page_number, page_data in enumerate(images):
         try:
@@ -497,7 +497,7 @@ def process_attachment_test(request, id):
         with open(settings.BASE_DIR / "file.jpg", "wb") as file:
             file.write(f)
     except:
-        raise    
+        raise
 
     return HttpResponse("Success")
 
